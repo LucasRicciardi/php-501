@@ -10,7 +10,7 @@ class Usuario
 
 	public function __construct()
 	{
-		$this->ativo = Usuario::STATUS_ATIVO;
+		$this->ativo = self::STATUS_ATIVO;
 	}
 
 	public function getAtivo()

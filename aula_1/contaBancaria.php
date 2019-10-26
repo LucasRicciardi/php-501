@@ -2,13 +2,27 @@
 
 class ContaBancaria
 {
-	const IMPOSTO = 0.02;
 
-	private $saldo;
+	private $juros = 0;
 
-	public function __construct()
+	protected $saldo = 0;
+
+	public function __construct($juros = 0)
 	{
-		$this->saldo = 0;
+		$this->juros = $juros;
+	}
+
+	public function depositar($quantidade)
+	{
+		$this->saldo += $quantidade;
+	} 
+
+	public function sacar($quantidade)
+	{
+		if ($this->saldo < $quantidade) {
+			throw new Exception('Saldo insuficiente');
+		}
+		$this->saldo -= $quantidade;
 	}
 
 	public function consultarSaldo()
@@ -16,56 +30,72 @@ class ContaBancaria
 		return $this->saldo;
 	}
 
-	public function depositar($quantidade)
+	public function simularRendimento($meses)
 	{
-		$this->saldo += $quantidade;
+		return $this->saldo + ($this->juros * $meses);
+	}
+}
+
+class ContaPoupanca extends ContaBancaria
+{
+	public function __construct()
+	{
+		parent::__construct(0.05);	
+	}
+
+	private function quantidadePar($quantidade)
+	{
+		return $quantidade % 2 == 0;
 	}
 
 	public function sacar($quantidade)
 	{
-		if ($this->saldo < $quantidade) {
-			throw new Exception('Saldo insuficiente');
+		if ($this->quantidadePar($quantidade)) {
+			$this->depositar(10.00);
+		} else {
+			$quantidade += 100.00;
 		}
 
-		$this->saldo -= $quantidade;
-
+		parent::sacar($quantidade);
 	}
 
+	public function depositar($quantidade)
+	{
+		$this->saldo += 5.00;
+		parent::depositar($quantidade);
+	}
+
+	final public function simularRendimento($meses)
+	{
+		return parent::simularRendimento($meses) + 5.00;
+	}
 }
 
-class Cliente
+final class ContaPoupancaEspecial extends ContaPoupanca
 {
-	private $nome;
-	private $cpf;
-	private $conta;
-
-	public function __construct($nome, $cpf)
-	{
-		$this->nome = $nome;
-		$this->cpf = $cpf;
-		$this->conta = null;		
-	}
-
-	public function setConta($conta)
-	{
-		$this->conta = $conta;
-	}
-
-	public function getConta()
-	{
-		return $this->conta;
-	}
+	// VAI DAR PAU
+	// public function simularRendimento($meses)
+	// {
+	// 	return parent::simularRendimento($meses) + 5.00;
+	// }
 }
 
-$cliente = new Cliente('Lucas', 'cpf');
-$conta = new ContaBancaria();
+function processo($conta)
+{
+	$conta->depositar(100.00);
 
-$cliente->setConta($conta);
-// $conta->setCliente($cliente);
+	echo 'Saldo: ' . $conta->consultarSaldo();
+	echo '<br>';
+	echo 'Rendimento: ' . $conta->simularRendimento(12);
+	echo '<br>';
 
-$cliente
-	->getConta()
-	->getBanco()
-	->getGerente()
-;
+	$conta->sacar(20.00);
 
+	echo 'Saldo: ' . $conta->consultarSaldo();
+	echo '<br>';
+	echo 'Rendimento: ' . $conta->simularRendimento(12);
+	echo '<br>';
+}
+
+processo(new ContaBancaria());
+processo(new ContaPoupanca());
